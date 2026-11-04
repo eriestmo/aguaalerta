@@ -19,8 +19,12 @@ Deno.serve(async (req) => {
   }
 
   const db = admin();
+  // El contador y la autenticacion usan la misma forma del correo, para que una variante no sume aparte.
+  const correoNormal = correo.trim().toLowerCase();
+  if (!/^[\x21-\x7e]+@[\x21-\x7e]+$/.test(correoNormal)) return json({ error: "credenciales" }, 401);
+
   // Se cuenta por cuenta: los encabezados de origen los puede falsificar quien llama.
-  const clave = await hash(correo.trim().toLowerCase());
+  const clave = await hash(correoNormal);
   const { data: previo } = await db.from("intentos_login").select("*").eq("correo_hash", clave).maybeSingle();
   if (previo?.bloqueado_hasta && new Date(previo.bloqueado_hasta) > new Date()) {
     return json({ error: "bloqueado" }, 429);
@@ -29,7 +33,7 @@ Deno.serve(async (req) => {
   const r = await fetch(`${Deno.env.get("SUPABASE_URL")}/auth/v1/token?grant_type=password`, {
     method: "POST",
     headers: { apikey: Deno.env.get("SUPABASE_ANON_KEY")!, "Content-Type": "application/json" },
-    body: JSON.stringify({ email: correo.trim(), password: contrasena }),
+    body: JSON.stringify({ email: correoNormal, password: contrasena }),
   });
   const cuerpo = await r.json();
 

@@ -1,4 +1,4 @@
-export const correoValido = (valor: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valor.trim())
+export const correoValido = (valor: string) => /^[\x21-\x3f\x41-\x7e]+@[\x21-\x3f\x41-\x7e]+\.[\x21-\x3f\x41-\x7e]+$/.test(valor.trim())
 export const contrasenaValida = (valor: string) => valor.length >= 8
 export const ubicacionValida = (punto: [number, number] | null, senas: string) =>
   Boolean(
