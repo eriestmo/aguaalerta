@@ -1,0 +1,32 @@
+
+!.vscode/extensions.json
+# Editor directories and files
+# Logs
+*.local
+*.log
+*.njsproj
+*.ntvs*
+*.sln
+*.suo
+*.sw?
+.DS_Store
+.env
+.env.local
+.idea
+.vscode/*
+dist
+dist-ssr
+lerna-debug.log*
+logs
+node_modules
+npm-debug.log*
+playwright-report
+pnpm-debug.log*
+supabase/.branches
+supabase/.temp
+test-results
+yarn-debug.log*
+yarn-error.log*
+.env.funciones
+e2e/.clave-prueba
+.env.produccion
