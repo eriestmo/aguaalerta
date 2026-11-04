@@ -1113,3 +1113,12 @@ dd {
     margin: 3px 0;
   }
 }
+
+.prueba {
+  background: var(--ambb);
+  color: var(--amb);
+  font-weight: 700;
+  font-size: 14px;
+  text-align: center;
+  padding: 6px 12px;
+}

@@ -37,6 +37,11 @@ function Inicio() {
 export default function App() {
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
+      {import.meta.env.VITE_MODO_PRUEBA === 'si' && (
+        <p className="prueba" role="note">
+          Versión de prueba: no ingrese datos reales.
+        </p>
+      )}
       <Sesion>
         <Routes>
           <Route path="/" element={<Inicio />} />

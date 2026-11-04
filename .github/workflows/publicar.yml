@@ -29,6 +29,7 @@ jobs:
           VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
           VITE_MAPA_CENTRO: ${{ vars.VITE_MAPA_CENTRO }}
+          VITE_MODO_PRUEBA: ${{ vars.VITE_MODO_PRUEBA }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
