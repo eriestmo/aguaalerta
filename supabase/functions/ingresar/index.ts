@@ -19,9 +19,8 @@ Deno.serve(async (req) => {
   }
 
   const db = admin();
-  // Se cuenta por cuenta y origen para que un tercero no pueda dejar fuera a una persona desde otra red.
-  const origen = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "";
-  const clave = await hash(`${correo.trim().toLowerCase()}|${origen}`);
+  // Se cuenta por cuenta: los encabezados de origen los puede falsificar quien llama.
+  const clave = await hash(correo.trim().toLowerCase());
   const { data: previo } = await db.from("intentos_login").select("*").eq("correo_hash", clave).maybeSingle();
   if (previo?.bloqueado_hasta && new Date(previo.bloqueado_hasta) > new Date()) {
     return json({ error: "bloqueado" }, 429);
@@ -41,6 +40,8 @@ Deno.serve(async (req) => {
     return json({ access_token: cuerpo.access_token, refresh_token: cuerpo.refresh_token });
   }
   if (cuerpo.error_code === "email_not_confirmed") return json({ error: "sin_confirmar" }, 401);
+  // Una saturacion o falla del servicio no es una contrasena incorrecta.
+  if (cuerpo.error_code !== "invalid_credentials") return json({ error: "temporal" }, 503);
 
   const { data: bloquear } = await db.rpc("registrar_fallo_login", {
     p_clave: clave,

@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(26);
+select plan(30);
 
 -- Las pruebas parten de una base vacia; el rollback final restaura todo.
 set local session_replication_role = replica;
@@ -43,6 +43,7 @@ select is((select descripcion from public.reportes where id=(select id from r1))
 select throws_ok($$select public.crear_reporte('10000000-0000-0000-0000-000000000002','fuga','Sin ubicacion',null,null,'  ')$$, null, 'exige mapa o senas');
 select lives_ok($$select public.crear_reporte('10000000-0000-0000-0000-000000000003','averia','Solo con senas',null,null,'Porton verde')$$, 'acepta solo senas');
 select throws_ok($$select public.crear_reporte('10000000-0000-0000-0000-000000000004','fuga','Foto ajena',1,1,null,array['otro/ruta.jpg'])$$, 'foto_invalida', 'rechaza fotos fuera de su carpeta');
+select throws_ok($$select public.crear_reporte('10000000-0000-0000-0000-000000000005','fuga','Ruta maliciosa',1,1,null,array['00000000-0000-0000-0000-00000000000a/10000000-0000-0000-0000-000000000005/../../otro.jpg'])$$, 'foto_invalida', 'rechaza rutas con saltos de carpeta');
 select throws_ok($$update public.reportes set estado='resuelto'$$, '42501', null, 'no puede actualizar reportes directamente');
 select throws_ok($$update public.profiles set rol='administrador' where id=auth.uid()$$, '42501', null, 'no puede cambiar su rol');
 select throws_ok($$select public.cambiar_estado((select id from r1),'resuelto',1)$$, 'sin_permiso', 'ciudadano no cambia estado');
@@ -79,6 +80,12 @@ select throws_ok($$update public.profiles set activo=false where id='00000000-00
 update public.profiles set activo=false where id='00000000-0000-0000-0000-00000000000a';
 select pg_temp.como('00000000-0000-0000-0000-00000000000a');
 select is((select count(*)::int from public.reportes), 0, 'cuenta desactivada no ve datos');
+
+reset role;
+select is(public.registrar_fallo_login('prueba', 1, '15 minutes'), true, 'el limite de intentos bloquea');
+create temp table bloqueo on commit drop as select bloqueado_hasta from public.intentos_login where correo_hash='prueba';
+select is(public.registrar_fallo_login('prueba', 5, '15 minutes'), true, 'un intento tardio sigue bloqueado');
+select is((select bloqueado_hasta from public.intentos_login where correo_hash='prueba'), (select bloqueado_hasta from bloqueo), 'un intento tardio no acorta el bloqueo');
 
 select * from finish();
 rollback;

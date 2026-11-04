@@ -1,6 +1,7 @@
 const mensajes: Record<string, string> = {
   credenciales: 'Correo o contraseña incorrectos',
   bloqueado: 'Demasiados intentos. Inténtelo más tarde',
+  temporal: 'No se pudo iniciar sesión. Inténtelo de nuevo en unos minutos',
   sin_confirmar: 'Confirme su correo para ingresar',
   ultimo_administrador: 'Debe existir al menos un administrador activo',
   correo_registrado: 'El correo ya está registrado',

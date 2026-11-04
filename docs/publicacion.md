@@ -62,6 +62,7 @@ Después, esa persona crea al personal desde **Personal**.
 
 ## 7. Límites conocidos
 
-- El bloqueo de 5 intentos aplica al inicio de sesión de la app. Las llamadas directas al servicio de autenticación solo tienen sus límites por IP. Para cerrarlo se puede activar un captcha.
+- El bloqueo de 5 intentos aplica por cuenta en el inicio de sesión de la app, así que alguien podría dejar fuera a una persona durante 15 minutos a propósito. Las llamadas directas al servicio de autenticación solo tienen sus límites por IP. Para cerrarlo se puede activar un captcha.
+- Los inicios de sesión pasan por una función del servidor. En el paso 3 suba el límite de inicio de sesión si varias personas reciben "Inténtelo de nuevo en unos minutos", porque ese límite puede contarlos como una sola dirección.
 - El correo de cambio de estado lo solicita el navegador de quien hace el cambio; si pierde la conexión justo después, ese correo no se envía, aunque el cambio queda guardado y visible en la app.
 - La firma real de las imágenes se valida en el navegador; el servidor limita el tamaño y el tipo declarado. Las fotos son privadas y se sirven como imagen.

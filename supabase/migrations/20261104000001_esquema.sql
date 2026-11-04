@@ -149,7 +149,7 @@ begin
     raise exception 'demasiadas_fotos' using errcode = 'P0001';
   end if;
   foreach v_ruta in array coalesce(p_fotos, '{}') loop
-    if v_ruta not like v_uid::text || '/' || p_solicitud::text || '/%' then
+    if v_ruta !~ ('^' || v_uid::text || '/' || p_solicitud::text || '/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png)$') then
       raise exception 'foto_invalida' using errcode = 'P0001';
     end if;
   end loop;
@@ -328,14 +328,22 @@ returns boolean
 language plpgsql security definer set search_path = '' as $$
 declare
   v_fallos integer;
+  v_hasta timestamptz;
 begin
   insert into public.intentos_login as i (correo_hash, fallos, actualizado_en)
     values (p_clave, 1, now())
     on conflict (correo_hash) do update
-      set fallos = case when i.bloqueado_hasta is not null then 1 else i.fallos + 1 end,
-          bloqueado_hasta = null,
+      set fallos = case
+            when i.bloqueado_hasta > now() then i.fallos
+            when i.bloqueado_hasta is not null then 1
+            else i.fallos + 1 end,
+          bloqueado_hasta = case when i.bloqueado_hasta > now() then i.bloqueado_hasta end,
           actualizado_en = now()
-    returning fallos into v_fallos;
+    returning fallos, bloqueado_hasta into v_fallos, v_hasta;
+  -- Un intento que llega tarde nunca acorta un bloqueo vigente.
+  if v_hasta is not null then
+    return true;
+  end if;
   if v_fallos >= p_max then
     update public.intentos_login
       set fallos = 0, bloqueado_hasta = now() + p_bloqueo
